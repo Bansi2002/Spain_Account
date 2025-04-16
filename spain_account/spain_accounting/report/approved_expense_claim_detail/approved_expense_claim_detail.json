@@ -1,0 +1,39 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2025-02-20 05:30:00.721690",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2025-02-20 05:30:00.721690",
+ "modified_by": "Administrator",
+ "module": "Spain Accounting",
+ "name": "Approved Expense Claim Detail",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Expense Claim",
+ "report_name": "Approved Expense Claim Detail",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "HR User"
+  },
+  {
+   "role": "Expense Approver"
+  },
+  {
+   "role": "Employee Self Service"
+  }
+ ],
+ "timeout": 0
+}
