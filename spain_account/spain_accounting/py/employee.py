@@ -4,9 +4,13 @@ def create_employee_account(self, method):
     try:
         # Fetch parent account based on account_number
         parent_account = frappe.db.get_value("Account", {"account_number": "640", "company": self.company}, "name")
+        irpf_parent_account = frappe.db.get_value("Account", {"account_number": "4751", "company": self.company}, "name")
         
-        if not parent_account:
+        if not irpf_parent_account:
             frappe.throw("Parent account with account_number 640 not found.")
+            
+        if not parent_account:
+            frappe.throw("Parent account with account_number 4751 not found.")
         
         # Get the latest account number under the same parent account
         records = frappe.db.get_list("Account", 
@@ -16,9 +20,18 @@ def create_employee_account(self, method):
             limit=1
         )
         
+        irpf_records = frappe.db.get_list("Account", 
+            filters={"parent_account": irpf_parent_account, "company": self.company},
+            fields=["account_number"],
+            order_by="account_number desc",
+            limit=1
+        )
+        
         # Set the base account number
         parent_account_number = "640"
         new_account_number = parent_account_number.ljust(8, "0")  # Default account number
+        irpf_parent_account_number = "4751"
+        irpf_new_account_number = irpf_parent_account_number.ljust(8, "0")  # Default account number
         
         if records:
             # Increment the latest account number
@@ -45,7 +58,31 @@ def create_employee_account(self, method):
         )
 
         account.insert()  # Use insert instead of save() to avoid overwriting if document exists
+        if irpf_records:
+            # Increment the latest account number
+            irpf_last_account_number = irpf_records[0].get("account_number", irpf_parent_account_number)
+            try:
+                irpf_new_account_number = str(int(irpf_last_account_number) + 1).zfill(8)
+            except ValueError:
+                frappe.throw(f"Invalid account number format found: {irpf_last_account_number}")
 
+        # Create a new Account document for the employee
+        irpf_account = frappe.get_doc(
+            dict(
+                doctype="Account",
+                is_group=0,  
+                account_name = f"I.R.P.F {self.employee_name}",  
+                account_type="Current Liability",
+                parent_account=irpf_parent_account,  
+                company=self.company,  
+                account_currency=self.salary_currency,
+                custom_es_cuenta_de_empleado=1,
+                custom_empleado=self.name,
+                account_number=irpf_new_account_number
+            )
+        )
+
+        irpf_account.insert()
     except frappe.exceptions.ValidationError as ve:
         raise ve  # Re-raise validation exceptions for more granular error handling
     except Exception as e:
